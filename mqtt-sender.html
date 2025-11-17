@@ -6,12 +6,7 @@
     <title>Control MQTT - ESP8266</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -33,22 +28,11 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
+        h1 { color: #333; text-align: center; margin-bottom: 10px; font-size: 28px; }
 
         .status-container {
             background: #f7f7f7;
@@ -59,59 +43,23 @@
             transition: all 0.3s ease;
         }
 
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 16px;
-        }
+        .status { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; }
 
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; animation: pulse 2s infinite; }
 
-        .status.connected .status-dot {
-            background: #4CAF50;
-        }
+        .status.connected .status-dot { background: #4CAF50; }
+        .status.disconnected .status-dot { background: #f44336; animation: none; }
 
-        .status.disconnected .status-dot {
-            background: #f44336;
-            animation: none;
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
+        .form-group { margin-bottom: 20px; }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            color: #555;
-            font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
+        label { display: block; color: #555; font-weight: 600; margin-bottom: 10px; font-size: 14px; }
 
         input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            outline: none;
+            width: 100%; padding: 15px; border: 2px solid #e0e0e0;
+            border-radius: 12px; font-size: 16px;
+            transition: all 0.3s ease; outline: none;
         }
 
         input[type="text"]:focus {
@@ -120,134 +68,49 @@
         }
 
         .btn-send {
-            width: 100%;
-            padding: 18px;
+            width: 100%; padding: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
+            color: white; border: none; border-radius: 12px;
+            font-size: 18px; font-weight: 700; cursor: pointer;
+            transition: all 0.3s ease; text-transform: uppercase;
         }
 
-        .btn-send:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-send:active {
-            transform: translateY(0);
-        }
-
-        .btn-send:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-send.sending {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        }
-
-        @keyframes buttonClick {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(0.95);
-            }
-        }
+        .btn-send:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
+        .btn-send:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-send.sending { background: #4CAF50; }
 
         .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            display: none;
-            align-items: center;
-            gap: 15px;
-            animation: slideIn 0.3s ease;
-            z-index: 1000;
+            position: fixed; top: 20px; right: 20px;
+            background: white; padding: 20px 30px;
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none; align-items: center; gap: 15px;
+            animation: slideIn 0.3s ease; z-index: 1000;
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .notification.show {
-            display: flex;
-        }
+        .notification.show { display: flex; }
+        .notification.success { border-left: 4px solid #4CAF50; }
+        .notification.error { border-left: 4px solid #f44336; }
 
-        .notification.success {
-            border-left: 4px solid #4CAF50;
-        }
-
-        .notification.error {
-            border-left: 4px solid #f44336;
-        }
-
-        .notification-icon {
-            font-size: 24px;
-        }
-
-        .notification-message {
-            font-weight: 600;
-            color: #333;
-        }
+        .notification-icon { font-size: 24px; }
+        .notification-message { font-weight: 600; color: #333; }
 
         .broker-info {
-            background: #f0f4ff;
-            border-left: 4px solid #667eea;
-            padding: 12px 15px;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #555;
-        }
-
-        .broker-info strong {
-            color: #667eea;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .container {
-                padding: 25px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            .notification {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: calc(100% - 20px);
-            }
+            background: #f0f4ff; border-left: 4px solid #667eea;
+            padding: 12px 15px; margin-bottom: 25px;
+            border-radius: 8px; font-size: 13px; color: #555;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎁 Enviar mensaje al regalo</h1>
-        
+
         <div class="status-container">
             <div class="status disconnected" id="status">
                 <span class="status-dot"></span>
@@ -256,23 +119,16 @@
         </div>
 
         <div class="broker-info">
-            <strong>Broker:</strong> <span id="broker-display">broker.emqx.io:8083</span><br>
+            <strong>Broker:</strong> <span id="broker-display">broker.emqx.io:8084</span><br>
             <strong>Tópico:</strong> <span id="topic-display">/regalo/mensaje</span>
         </div>
 
         <div class="form-group">
             <label for="message">Escribe tu mensaje:</label>
-            <input 
-                type="text" 
-                id="message" 
-                placeholder="Escribe aquí tu mensaje..."
-                autocomplete="off"
-            >
+            <input type="text" id="message" placeholder="Escribe aquí tu mensaje..." autocomplete="off">
         </div>
 
-        <button class="btn-send" id="sendBtn" onclick="sendMessage()">
-            Enviar Mensaje
-        </button>
+        <button class="btn-send" id="sendBtn" onclick="sendMessage()">Enviar Mensaje</button>
     </div>
 
     <div class="notification" id="notification">
@@ -280,200 +136,151 @@
         <span class="notification-message" id="notificationMessage"></span>
     </div>
 
-    <script>
-        // ========================================
-        // CONFIGURACIÓN MQTT - EDITABLE
-        // ========================================
-        const BROKER_HOST = "broker.emqx.io";      // Broker MQTT público
-        const BROKER_PORT = 8083;                   // Puerto WebSocket (sin TLS)
-        const MQTT_TOPIC = "/regalo/mensaje";       // Tópico de publicación
-        
-        // ========================================
-        // URL WEBSOCKET MQTT COMPLETA
-        // ========================================
-        const WS_URL = `ws://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
-        const CLIENT_ID = "web_client_" + Math.random().toString(16).substr(2, 8);
+<script>
 
-        console.log("🔗 URL WebSocket MQTT:", WS_URL);
-        console.log("🆔 Client ID:", CLIENT_ID);
-        console.log("📍 Tópico:", MQTT_TOPIC);
+///////////////////////////////////////////////////////////
+// CONFIG MQTT PARA GITHUB PAGES (FUNCIONA)
+///////////////////////////////////////////////////////////
 
-        // ========================================
-        // CÓDIGO PRINCIPAL - NO MODIFICAR
-        // ========================================
-        let client;
-        let isConnected = false;
+const BROKER_HOST = "broker.emqx.io";
+const BROKER_PORT = 8084;         // WSS obligatorio para GitHub Pages
+const MQTT_TOPIC  = "/regalo/mensaje";
 
-        // Elementos del DOM
-        const statusElement = document.getElementById('status');
-        const statusText = document.getElementById('status-text');
-        const messageInput = document.getElementById('message');
-        const sendBtn = document.getElementById('sendBtn');
-        const notification = document.getElementById('notification');
-        const notificationIcon = document.getElementById('notificationIcon');
-        const notificationMessage = document.getElementById('notificationMessage');
+// 👉 WebSocket Seguro (obligatorio)
+const WS_URL = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
+const CLIENT_ID = "web_" + Math.random().toString(16).substr(2, 8);
 
-        // Actualizar información del broker en pantalla
-        document.getElementById('broker-display').textContent = `${BROKER_HOST}:${BROKER_PORT}`;
-        document.getElementById('topic-display').textContent = MQTT_TOPIC;
+console.log("WS_URL:", WS_URL);
 
-        // Inicializar conexión MQTT
-        function initMQTT() {
-            try {
-                // Crear cliente MQTT con URL completa de WebSocket
-                client = new Paho.MQTT.Client(WS_URL, CLIENT_ID);
+let client;
+let isConnected = false;
 
-                // Configurar callbacks
-                client.onConnectionLost = onConnectionLost;
-                client.onMessageArrived = onMessageArrived;
+// DOM
+const statusElement = document.getElementById('status');
+const statusText = document.getElementById('status-text');
+const messageInput = document.getElementById('message');
+const sendBtn = document.getElementById('sendBtn');
+const notification = document.getElementById('notification');
+const notificationIcon = document.getElementById('notificationIcon');
+const notificationMessage = document.getElementById('notificationMessage');
 
-                // Opciones de conexión
-                const options = {
-                    timeout: 10,
-                    onSuccess: onConnect,
-                    onFailure: onFailure,
-                    keepAliveInterval: 60,
-                    cleanSession: true,
-                    reconnect: false  // Manejamos reconexión manual
-                };
 
-                // Conectar
-                console.log(`⏳ Conectando a ${WS_URL}...`);
-                client.connect(options);
-            } catch (error) {
-                console.error("❌ Error al inicializar MQTT:", error);
-                showNotification("Error al conectar con el broker", "error");
-                setTimeout(initMQTT, 5000); // Reintentar en 5 segundos
-            }
-        }
+///////////////////////////////////////////////////////////
+// INICIAR MQTT
+///////////////////////////////////////////////////////////
+function initMQTT() {
+    try {
+        client = new Paho.MQTT.Client(WS_URL, CLIENT_ID);
 
-        // Callback: Conexión exitosa
-        function onConnect() {
-            console.log(`✅ Conectado a ${WS_URL}`);
-            isConnected = true;
-            updateStatus(true);
-            showNotification(`Conectado a ${BROKER_HOST} ✓`, "success");
-        }
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
 
-        // Callback: Fallo en la conexión
-        function onFailure(message) {
-            console.error("❌ Fallo en la conexión:", message.errorMessage || message);
-            isConnected = false;
-            updateStatus(false);
-            showNotification("Error de conexión. Reintentando...", "error");
-            setTimeout(initMQTT, 5000); // Reintentar en 5 segundos
-        }
+        const options = {
+            timeout: 5,
+            useSSL: true,
+            cleanSession: true,
+            onSuccess: onConnect,
+            onFailure: onFailure
+        };
 
-        // Callback: Conexión perdida
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log("⚠️ Conexión perdida:", responseObject.errorMessage);
-                isConnected = false;
-                updateStatus(false);
-                showNotification("Conexión perdida. Reconectando...", "error");
-                setTimeout(initMQTT, 3000); // Reintentar en 3 segundos
-            }
-        }
+        console.log("Conectando a:", WS_URL);
+        client.connect(options);
 
-        // Callback: Mensaje recibido
-        function onMessageArrived(message) {
-            console.log("📨 Mensaje recibido:", message.payloadString);
-        }
+    } catch (err) {
+        console.error("Error al iniciar MQTT:", err);
+        showNotification("Error al conectar con MQTT", "error");
+    }
+}
 
-        // Enviar mensaje
-        function sendMessage() {
-            const messageText = messageInput.value.trim();
 
-            // Validar mensaje vacío
-            if (messageText === "") {
-                showNotification("⚠️ El mensaje no puede estar vacío", "error");
-                messageInput.focus();
-                return;
-            }
+///////////////////////////////////////////////////////////
+// CALLBACKS
+///////////////////////////////////////////////////////////
 
-            // Validar conexión
-            if (!isConnected) {
-                showNotification("⚠️ No hay conexión con el broker", "error");
-                return;
-            }
+function onConnect() {
+    isConnected = true;
+    updateStatus(true);
+    console.log("MQTT conectado!");
+}
 
-            try {
-                // Crear y enviar mensaje MQTT
-                const message = new Paho.MQTT.Message(messageText);
-                message.destinationName = MQTT_TOPIC;
-                message.qos = 0;
-                client.send(message);
+function onFailure(e) {
+    console.warn("Error de conexión:", e.errorMessage);
+    updateStatus(false);
+    setTimeout(initMQTT, 4000);
+}
 
-                // Animación del botón
-                sendBtn.classList.add('sending');
-                setTimeout(() => {
-                    sendBtn.classList.remove('sending');
-                }, 300);
+function onConnectionLost(e) {
+    console.warn("Conexión perdida:", e.errorMessage);
+    updateStatus(false);
+    setTimeout(initMQTT, 4000);
+}
 
-                // Notificación de éxito
-                showNotification("✓ Mensaje enviado correctamente", "success");
-                console.log("📤 Mensaje enviado:", messageText, "→ Tópico:", MQTT_TOPIC);
+function onMessageArrived(message) {
+    console.log("Mensaje recibido:", message.payloadString);
+}
 
-                // Limpiar input
-                messageInput.value = "";
-                messageInput.focus();
 
-            } catch (error) {
-                console.error("❌ Error al enviar mensaje:", error);
-                showNotification("✗ Error al enviar el mensaje", "error");
-            }
-        }
+///////////////////////////////////////////////////////////
+// ENVIAR MENSAJE
+///////////////////////////////////////////////////////////
 
-        // Actualizar estado visual
-        function updateStatus(connected) {
-            if (connected) {
-                statusElement.classList.remove('disconnected');
-                statusElement.classList.add('connected');
-                statusText.textContent = 'Conectado';
-                sendBtn.disabled = false;
-            } else {
-                statusElement.classList.remove('connected');
-                statusElement.classList.add('disconnected');
-                statusText.textContent = 'Desconectado';
-                sendBtn.disabled = true;
-            }
-        }
+function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text) return showNotification("Escribe un mensaje", "error");
+    if (!isConnected) return showNotification("No conectado", "error");
 
-        // Mostrar notificación
-        function showNotification(message, type) {
-            notificationMessage.textContent = message;
-            notification.className = 'notification show ' + type;
-            
-            if (type === 'success') {
-                notificationIcon.textContent = '✓';
-            } else {
-                notificationIcon.textContent = '✗';
-            }
+    try {
+        const m = new Paho.MQTT.Message(text);
+        m.destinationName = MQTT_TOPIC;
+        client.send(m);
 
-            // Ocultar después de 3 segundos
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+        sendBtn.classList.add("sending");
+        setTimeout(() => sendBtn.classList.remove("sending"), 300);
 
-        // Permitir enviar con Enter
-        messageInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        showNotification("Mensaje enviado ✓", "success");
+        messageInput.value = "";
 
-        // Iniciar conexión al cargar la página
-        window.addEventListener('load', function() {
-            initMQTT();
-        });
+    } catch (err) {
+        showNotification("Error al enviar", "error");
+    }
+}
 
-        // Intentar reconectar cuando la ventana vuelve a tener foco
-        window.addEventListener('focus', function() {
-            if (!isConnected) {
-                initMQTT();
-            }
-        });
-    </script>
+
+///////////////////////////////////////////////////////////
+// UI
+///////////////////////////////////////////////////////////
+
+function updateStatus(ok) {
+    if (ok) {
+        statusElement.classList.remove("disconnected");
+        statusElement.classList.add("connected");
+        statusText.textContent = "Conectado";
+        sendBtn.disabled = false;
+    } else {
+        statusElement.classList.add("disconnected");
+        statusText.textContent = "Desconectado";
+        sendBtn.disabled = true;
+    }
+}
+
+function showNotification(msg, type) {
+    notificationMessage.textContent = msg;
+    notificationIcon.textContent = type === "success" ? "✓" : "✗";
+    notification.className = "notification show " + type;
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 2600);
+}
+
+
+///////////////////////////////////////////////////////////
+// INICIAR AUTO
+///////////////////////////////////////////////////////////
+
+window.onload = initMQTT;
+
+</script>
+
 </body>
 </html>
