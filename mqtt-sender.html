@@ -285,15 +285,23 @@
         // CONFIGURACIÓN MQTT - EDITABLE
         // ========================================
         const BROKER_HOST = "broker.emqx.io";      // Broker MQTT público
-        const BROKER_PORT = 8083;                   // Puerto WebSocket (sin TLS)
+        const BROKER_PORT = 8083;                   // Puerto WebSocket (8083=ws, 8084=wss)
         const MQTT_TOPIC = "/regalo/mensaje";       // Tópico de publicación
-        const USE_TLS = false;                      // Usar WebSocket seguro (wss://)
+        const USE_TLS = false;                      // true=wss (puerto 8084), false=ws (puerto 8083)
         
+        // ========================================
+        // CREAR URL DE WEBSOCKET MQTT
+        // ========================================
+        const WS_PROTOCOL = USE_TLS ? "wss" : "ws";
+        const WS_URL = `${WS_PROTOCOL}://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
+        const CLIENT_ID = "web_client_" + Math.random().toString(16).substr(2, 8);
+
+        console.log("🔗 URL WebSocket MQTT:", WS_URL);
+        console.log("🆔 Client ID:", CLIENT_ID);
+
         // ========================================
         // CÓDIGO PRINCIPAL - NO MODIFICAR
         // ========================================
-        const CLIENT_ID = "web_client_" + Math.random().toString(16).substr(2, 8);
-
         let client;
         let isConnected = false;
 
@@ -313,8 +321,8 @@
         // Inicializar conexión MQTT
         function initMQTT() {
             try {
-                // Crear cliente MQTT con Paho
-                client = new Paho.MQTT.Client(BROKER_HOST, BROKER_PORT, CLIENT_ID);
+                // Crear cliente MQTT con URL completa de WebSocket
+                client = new Paho.MQTT.Client(WS_URL, CLIENT_ID);
 
                 // Configurar callbacks
                 client.onConnectionLost = onConnectionLost;
@@ -327,15 +335,14 @@
                     onFailure: onFailure,
                     keepAliveInterval: 60,
                     cleanSession: true,
-                    useSSL: USE_TLS,
                     reconnect: false  // Manejamos reconexión manual
                 };
 
                 // Conectar
-                console.log(`Conectando a ${USE_TLS ? 'wss' : 'ws'}://${BROKER_HOST}:${BROKER_PORT}...`);
+                console.log(`⏳ Conectando a ${WS_URL}...`);
                 client.connect(options);
             } catch (error) {
-                console.error("Error al inicializar MQTT:", error);
+                console.error("❌ Error al inicializar MQTT:", error);
                 showNotification("Error al conectar con el broker", "error");
                 setTimeout(initMQTT, 5000); // Reintentar en 5 segundos
             }
@@ -343,7 +350,7 @@
 
         // Callback: Conexión exitosa
         function onConnect() {
-            console.log(`✓ Conectado a ${BROKER_HOST}:${BROKER_PORT}`);
+            console.log(`✅ Conectado a ${WS_URL}`);
             isConnected = true;
             updateStatus(true);
             showNotification(`Conectado a ${BROKER_HOST} ✓`, "success");
@@ -351,7 +358,7 @@
 
         // Callback: Fallo en la conexión
         function onFailure(message) {
-            console.error("Fallo en la conexión:", message.errorMessage || message);
+            console.error("❌ Fallo en la conexión:", message.errorMessage || message);
             isConnected = false;
             updateStatus(false);
             showNotification("Error de conexión. Reintentando...", "error");
@@ -361,7 +368,7 @@
         // Callback: Conexión perdida
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0) {
-                console.log("Conexión perdida:", responseObject.errorMessage);
+                console.log("⚠️ Conexión perdida:", responseObject.errorMessage);
                 isConnected = false;
                 updateStatus(false);
                 showNotification("Conexión perdida. Reconectando...", "error");
@@ -371,7 +378,7 @@
 
         // Callback: Mensaje recibido
         function onMessageArrived(message) {
-            console.log("Mensaje recibido:", message.payloadString);
+            console.log("📨 Mensaje recibido:", message.payloadString);
         }
 
         // Enviar mensaje
@@ -406,14 +413,14 @@
 
                 // Notificación de éxito
                 showNotification("✓ Mensaje enviado correctamente", "success");
-                console.log("Mensaje enviado:", messageText);
+                console.log("📤 Mensaje enviado:", messageText, "→ Tópico:", MQTT_TOPIC);
 
                 // Limpiar input
                 messageInput.value = "";
                 messageInput.focus();
 
             } catch (error) {
-                console.error("Error al enviar mensaje:", error);
+                console.error("❌ Error al enviar mensaje:", error);
                 showNotification("✗ Error al enviar el mensaje", "error");
             }
         }
