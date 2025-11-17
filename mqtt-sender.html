@@ -285,19 +285,18 @@
         // CONFIGURACIÓN MQTT - EDITABLE
         // ========================================
         const BROKER_HOST = "broker.emqx.io";      // Broker MQTT público
-        const BROKER_PORT = 8083;                   // Puerto WebSocket (8083=ws, 8084=wss)
+        const BROKER_PORT = 8083;                   // Puerto WebSocket (sin TLS)
         const MQTT_TOPIC = "/regalo/mensaje";       // Tópico de publicación
-        const USE_TLS = false;                      // true=wss (puerto 8084), false=ws (puerto 8083)
         
         // ========================================
-        // CREAR URL DE WEBSOCKET MQTT
+        // URL WEBSOCKET MQTT COMPLETA
         // ========================================
-        const WS_PROTOCOL = USE_TLS ? "wss" : "ws";
-        const WS_URL = `${WS_PROTOCOL}://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
+        const WS_URL = `ws://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
         const CLIENT_ID = "web_client_" + Math.random().toString(16).substr(2, 8);
 
         console.log("🔗 URL WebSocket MQTT:", WS_URL);
         console.log("🆔 Client ID:", CLIENT_ID);
+        console.log("📍 Tópico:", MQTT_TOPIC);
 
         // ========================================
         // CÓDIGO PRINCIPAL - NO MODIFICAR
