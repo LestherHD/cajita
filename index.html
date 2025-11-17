@@ -138,24 +138,17 @@
 
 <script>
 
-///////////////////////////////////////////////////////////
-// CONFIG MQTT PARA GITHUB PAGES (FUNCIONA)
-///////////////////////////////////////////////////////////
-
+// ==================== CONFIG MQTT ============================
 const BROKER_HOST = "broker.emqx.io";
-const BROKER_PORT = 8084;         // WSS obligatorio para GitHub Pages
+const BROKER_PORT = 8084;    
 const MQTT_TOPIC  = "/regalo/mensaje";
 
-// 👉 WebSocket Seguro (obligatorio)
 const WS_URL = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
 const CLIENT_ID = "web_" + Math.random().toString(16).substr(2, 8);
-
-console.log("WS_URL:", WS_URL);
 
 let client;
 let isConnected = false;
 
-// DOM
 const statusElement = document.getElementById('status');
 const statusText = document.getElementById('status-text');
 const messageInput = document.getElementById('message');
@@ -164,10 +157,7 @@ const notification = document.getElementById('notification');
 const notificationIcon = document.getElementById('notificationIcon');
 const notificationMessage = document.getElementById('notificationMessage');
 
-
-///////////////////////////////////////////////////////////
-// INICIAR MQTT
-///////////////////////////////////////////////////////////
+// ==================== INICIAR MQTT ============================
 function initMQTT() {
     try {
         client = new Paho.MQTT.Client(WS_URL, CLIENT_ID);
@@ -175,64 +165,51 @@ function initMQTT() {
         client.onConnectionLost = onConnectionLost;
         client.onMessageArrived = onMessageArrived;
 
-        const options = {
+        client.connect({
             timeout: 5,
             useSSL: true,
             cleanSession: true,
             onSuccess: onConnect,
             onFailure: onFailure
-        };
-
-        console.log("Conectando a:", WS_URL);
-        client.connect(options);
+        });
 
     } catch (err) {
-        console.error("Error al iniciar MQTT:", err);
-        showNotification("Error al conectar con MQTT", "error");
+        showNotification("Error al iniciar MQTT", "error");
     }
 }
-
-
-///////////////////////////////////////////////////////////
-// CALLBACKS
-///////////////////////////////////////////////////////////
 
 function onConnect() {
     isConnected = true;
     updateStatus(true);
-    console.log("MQTT conectado!");
 }
 
-function onFailure(e) {
-    console.warn("Error de conexión:", e.errorMessage);
+function onFailure() {
     updateStatus(false);
     setTimeout(initMQTT, 4000);
 }
 
-function onConnectionLost(e) {
-    console.warn("Conexión perdida:", e.errorMessage);
+function onConnectionLost() {
     updateStatus(false);
     setTimeout(initMQTT, 4000);
 }
 
-function onMessageArrived(message) {
-    console.log("Mensaje recibido:", message.payloadString);
+function onMessageArrived(msg) {
+    console.log("Mensaje recibido →", msg.payloadString);
 }
 
-
-///////////////////////////////////////////////////////////
-// ENVIAR MENSAJE
-///////////////////////////////////////////////////////////
-
+// ==================== ENVIAR MENSAJE ============================
 function sendMessage() {
     const text = messageInput.value.trim();
     if (!text) return showNotification("Escribe un mensaje", "error");
     if (!isConnected) return showNotification("No conectado", "error");
 
+    // ⚠ IMPORTANTE: agregar "MQTT:" para que EL ESP LO GUARDE
+    const finalMsg = "MQTT:" + text;
+
     try {
-        const m = new Paho.MQTT.Message(text);
-        m.destinationName = MQTT_TOPIC;
-        client.send(m);
+        const message = new Paho.MQTT.Message(finalMsg);
+        message.destinationName = MQTT_TOPIC;
+        client.send(message);
 
         sendBtn.classList.add("sending");
         setTimeout(() => sendBtn.classList.remove("sending"), 300);
@@ -245,11 +222,7 @@ function sendMessage() {
     }
 }
 
-
-///////////////////////////////////////////////////////////
-// UI
-///////////////////////////////////////////////////////////
-
+// ==================== UI ============================
 function updateStatus(ok) {
     if (ok) {
         statusElement.classList.remove("disconnected");
@@ -263,24 +236,16 @@ function updateStatus(ok) {
     }
 }
 
-function showNotification(msg, type) {
-    notificationMessage.textContent = msg;
+function showNotification(text, type) {
+    notificationMessage.textContent = text;
     notificationIcon.textContent = type === "success" ? "✓" : "✗";
     notification.className = "notification show " + type;
 
-    setTimeout(() => {
-        notification.classList.remove("show");
-    }, 2600);
+    setTimeout(() => notification.classList.remove("show"), 2500);
 }
-
-
-///////////////////////////////////////////////////////////
-// INICIAR AUTO
-///////////////////////////////////////////////////////////
 
 window.onload = initMQTT;
 
 </script>
-
 </body>
 </html>
